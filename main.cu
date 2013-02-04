@@ -15,56 +15,56 @@ struct copyelt2xp : public thrust::unary_function<int,int>
     bool* m;
     bool* mxp;
 
-		//==============================================================================
-		//------------------------------------------------------------------------------
-		// Author         Date        Action
-		// S. Kondratov   05.02.2012  Implementation
-		//==============================================================================
-		copyelt2xp(bool* _m, bool* _mxp, int _w, int _h, int _param):
-		m(_m), mxp(_mxp), w(_w), h(_h), param(_param)
-		{
-		}
+	//==============================================================================
+	//------------------------------------------------------------------------------
+	// Author         Date        Action
+	// S. Kondratov   05.02.2012  Implementation
+	//==============================================================================
+	copyelt2xp(bool* _m, bool* _mxp, int _w, int _h, int _param):
+	m(_m), mxp(_mxp), w(_w), h(_h), param(_param)
+	{
+	}
 
-		//==============================================================================
-		// Algorithm implementation
-		//------------------------------------------------------------------------------
-		// Author         Date        Action
-		// S. Kondratov   05.02.2012  Implementation
-		//==============================================================================
-		__device__
-		int operator()(int i)
+	//==============================================================================
+	// Algorithm implementation
+	//------------------------------------------------------------------------------
+	// Author         Date        Action
+	// S. Kondratov   05.02.2012  Implementation
+	//==============================================================================
+	__device__
+	int operator()(int i)
+	{
+	  if (!m[i])
+	  {
+		int w_i = i % w;
+		int h_i = __float2int_rd(i / w);
+		int sum = 0;
+
+		sum += chc(w_i - 1, w) && chc(h_i - 1, h) ? !m[i - 1 - w] : 1;
+		sum += chc(h_i - 1, h)                    ? !m[i - w]     : 1;
+		sum += chc(w_i + 1, w) && chc(h_i - 1, h) ? !m[i + 1 - w] : 1;
+		sum += chc(w_i - 1, w)                    ? !m[i - 1]     : 1;
+		sum += chc(w_i + 1, w) 		              ? !m[i + 1]     : 1;
+		sum += chc(w_i - 1, w) && chc(h_i + 1, h) ? !m[i - 1 + w] : 1;
+		sum += chc(h_i + 1, h)                    ? !m[i + w]     : 1;
+		sum += chc(w_i + 1, w) && chc(h_i + 1, h) ? !m[i + 1 + w] : 1;
+
+		if (8 - sum > param)
 		{
-		  if (!m[i])
-		  {
-		    int w_i = i % w;
-		    int h_i = __float2int_rd(i / w);
-		    int sum = 0;
-		    
-		    sum += chc(w_i - 1, w) && chc(h_i - 1, h) ? !m[i - 1 - w] : 1;
-		    sum += chc(h_i - 1, h)                    ? !m[i - w]     : 1;
-		    sum += chc(w_i + 1, w) && chc(h_i - 1, h) ? !m[i + 1 - w] : 1;
-		    sum += chc(w_i - 1, w)                    ? !m[i - 1]     : 1;
-		    sum += chc(w_i + 1, w) 		              ? !m[i + 1]     : 1;
-		    sum += chc(w_i - 1, w) && chc(h_i + 1, h) ? !m[i - 1 + w] : 1;
-		    sum += chc(h_i + 1, h)                    ? !m[i + w]     : 1;
-		    sum += chc(w_i + 1, w) && chc(h_i + 1, h) ? !m[i + 1 + w] : 1;
-		    
-		    if (8 - sum > param)
-		    {
-		    	mxp[i] = true;
-					return 1;
-		    }
-			}
-		  mxp[i] = m[i];
-		  return 0;
+			mxp[i] = true;
+				return 1;
 		}
-		//==============================================================================
-		// Swap pointer to make new algorithm step
-		//------------------------------------------------------------------------------
-		// Author         Date        Action
-		// S. Kondratov   05.02.2012  Implementation
-		//==============================================================================
-		__device__ __host__
+		}
+	  mxp[i] = m[i];
+	  return 0;
+	}
+	//==============================================================================
+	// Swap pointer to make new algorithm step
+	//------------------------------------------------------------------------------
+	// Author         Date        Action
+	// S. Kondratov   05.02.2012  Implementation
+	//==============================================================================
+	__device__ __host__
     void Replace()
     {
     	bool* buff = m;
@@ -72,13 +72,13 @@ struct copyelt2xp : public thrust::unary_function<int,int>
     	mxp = buff;
     }
 
-		//==============================================================================
-		// Alias for logic functions
-		//------------------------------------------------------------------------------
-		// Author         Date        Action
-		// S. Kondratov   05.02.2012  Implementation
-		//==============================================================================
-		 __device__
+	//==============================================================================
+	// Alias for logic functions
+	//------------------------------------------------------------------------------
+	// Author         Date        Action
+	// S. Kondratov   05.02.2012  Implementation
+	//==============================================================================
+	 __device__
     inline bool chc(const int i, const int n)
     {
 			return (n > i) && (i >= 0);
