@@ -1,0 +1,4 @@
+To compile program use following:
+nvcc -I /home/skondratov/boost/ main.cpp
+-I indicates include dir for project.
+
